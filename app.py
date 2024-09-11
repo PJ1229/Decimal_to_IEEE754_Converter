@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
+# convert decimal to binary whole number
+
 # convert decimal to ieee754
 def decimal_to_ieee754(decimal, bits):
 
@@ -20,3 +22,6 @@ def index():
         result = decimal_to_ieee754(decimal, bits)
     
     return render_template('index.html', result=result)
+
+if __name__ == '__main__':
+    app.run(debug=False)
