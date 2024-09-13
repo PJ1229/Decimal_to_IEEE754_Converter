@@ -2,25 +2,27 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Convert decimal to binary whole number
+#decimal to binary conversion
 def decimal_to_binary(decimal, total_length):
+
+    #returns if decimal is 0
     if decimal == 0:
         return '0.' + '0' * (total_length - 2)
     
+    #calculates integral and fractional parts
     binary = ""
     integral = int(decimal)
     fractional = decimal - integral 
 
-    # Convert integral part
+    #establishes integral_binary
     integral_binary = ""
     while integral:
         integral_binary = str(integral % 2) + integral_binary
         integral //= 2
-
     if not integral_binary:
         integral_binary = '0'
     
-    # Convert fractional part
+    #establishes fractional_binary
     fractional_binary = ""
     while len(fractional_binary) < (total_length - len(integral_binary) - 1):
         fractional *= 2
@@ -31,15 +33,18 @@ def decimal_to_binary(decimal, total_length):
         else:
             fractional_binary += '0'
 
+    #combines integral_binary and fractional_binary
     binary = integral_binary + '.' + fractional_binary
     if len(binary) < total_length:
         binary = binary.ljust(total_length, '0')
 
+    #returns binary
     return binary
 
-
-# Convert binary to IEEE 754
+#binary to decimal conversion
 def binary_to_ieee754(sign, binary, precision='double'):
+
+    #checks precision type and allocates bits
     if precision == 'single':
         exponent_bits = 8
         mantissa_bits = 23
@@ -48,21 +53,23 @@ def binary_to_ieee754(sign, binary, precision='double'):
         exponent_bits = 11
         mantissa_bits = 52
         exponent_bias = 1023
+
+    #if there is an wrong input raises an error
     else:
         raise ValueError("Precision must be 'single' or 'double'")
 
-    # Normalize binary string
+    #normalize binary string
     if '.' in binary:
         integral_part, fractional_part = binary.split('.')
     else:
         integral_part, fractional_part = binary, ''
 
-    # Remove leading zeros
+    #remove leading zeros
     integral_part = integral_part.lstrip('0')
     if not integral_part:
         integral_part = '0'
 
-    # Calculate exponent
+    #calculate exponent
     if integral_part == '0':
         exponent = -fractional_part.find('1') - 1
     else:
@@ -71,11 +78,11 @@ def binary_to_ieee754(sign, binary, precision='double'):
     biased_exponent = exponent + exponent_bias
     exponent_binary = format(biased_exponent, f'0{exponent_bits}b')
 
-    # Calculate mantissa
+    #calculate mantissa
     mantissa = integral_part[1:] + fractional_part
     mantissa = mantissa.ljust(mantissa_bits, '0')[:mantissa_bits]
 
-    # Construct IEEE 754 string
+    #construct ieee754
     ieee754 = str(sign) + exponent_binary + mantissa
     return f"{ieee754}"
 
@@ -83,18 +90,12 @@ def binary_to_ieee754(sign, binary, precision='double'):
 def index():
     result = None
     if request.method == 'POST':
-        # Retrieve data from form
-        decimal_str = request.form['decimal']
-        precision_str = request.form['bits']
 
-        try:
-            decimal = float(decimal_str)
-        except ValueError:
-            result = "Invalid decimal number"
-            return render_template('index.html', result=result)
-        
-        precision = int(precision_str)
+        #request data
+        decimal = float(request.form['decimal'])
+        precision = int(request.form['bits'])
 
+        #returns data based on precision type
         if precision == 32:
             binary = decimal_to_binary(decimal, 24)
             ieee754 = binary_to_ieee754(0, binary, precision='single')
@@ -106,6 +107,7 @@ def index():
         else:
             result = "Invalid precision value. Use 32 or 64."
     
+    #renders the template
     return render_template('index.html', result=result)
 
 if __name__ == '__main__':
