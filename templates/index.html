@@ -10,9 +10,10 @@
     <form action="/" method="post">
         <label for="decimal">Decimal Number:</label>
         <input type="text" inputmode="decimal" pattern="-?[0-9]*[.,]?[0-9]+" id="decimal" name="decimal" step="any" required><br>
-
-        <label for="bits">Bits:</label>
+        
+        <label for="bits">Precision:</label>
         <select name="bits" id="bits">
+            <option value="32">32-bit</option>
             <option value="64">64-bit</option>
         </select><br>
         
