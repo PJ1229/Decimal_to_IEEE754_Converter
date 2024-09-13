@@ -99,11 +99,11 @@ def index():
         if precision == 32:
             binary = decimal_to_binary(decimal, 24)
             ieee754 = binary_to_ieee754(0, binary, precision='single')
-            result = ieee754
+            result = "the conversion of " + str(decimal) + " in decimal to ieee754 with 32 bits of precision is " + ieee754
         elif precision == 64:
             binary = decimal_to_binary(decimal, 52)
             ieee754 = binary_to_ieee754(0, binary, precision='double')
-            result = ieee754
+            result = "the conversion of " + str(decimal) + " in decimal to ieee754 with 64 bits of precision is " + ieee754
         else:
             result = "Invalid precision value. Use 32 or 64."
     
