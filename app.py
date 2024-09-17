@@ -47,16 +47,24 @@ def decimal_to_binary(decimal, total_length):
 # binary to ieee 754 conversion
 def binary_to_ieee754(sign, binary, precision='double'):
     # checks precision type and allocates bits
-    if precision == 'single':
+    if precision == 'half':  # 16-bit
+        exponent_bits = 5
+        mantissa_bits = 10
+        exponent_bias = 15
+    elif precision == 'single':  # 32-bit
         exponent_bits = 8
         mantissa_bits = 23
         exponent_bias = 127
-    elif precision == 'double':
+    elif precision == 'double':  # 64-bit
         exponent_bits = 11
         mantissa_bits = 52
         exponent_bias = 1023
+    elif precision == 'quad':  # 128-bit
+        exponent_bits = 15
+        mantissa_bits = 112
+        exponent_bias = 16383
     else:
-        raise ValueError("Precision must be 'single' or 'double'")
+        raise ValueError("Precision must be 'half', 'single', 'double', or 'quad'")
 
     # normalize binary string
     if '.' in binary:
@@ -86,6 +94,7 @@ def binary_to_ieee754(sign, binary, precision='double'):
     ieee754 = str(sign) + exponent_binary + mantissa
     return ieee754
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     result = None
@@ -101,16 +110,24 @@ def index():
             decimal = abs(decimal)
 
         # returns data based on precision type
-        if precision == 32:
-            binary = decimal_to_binary(decimal, 24)
+        if precision == 16:
+            binary = decimal_to_binary(decimal, 11)  # 1 bit for sign + 5 bits for exponent + 10 bits for mantissa
+            ieee754 = binary_to_ieee754(sign, binary, precision='half')
+            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with half precision is {ieee754}"
+        elif precision == 32:
+            binary = decimal_to_binary(decimal, 24)  # 1 bit for sign + 8 bits for exponent + 23 bits for mantissa
             ieee754 = binary_to_ieee754(sign, binary, precision='single')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with 32 bits of precision is {ieee754}"
+            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with single precision is {ieee754}"
         elif precision == 64:
-            binary = decimal_to_binary(decimal, 52)
+            binary = decimal_to_binary(decimal, 53)  # 1 bit for sign + 11 bits for exponent + 52 bits for mantissa
             ieee754 = binary_to_ieee754(sign, binary, precision='double')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with 64 bits of precision is {ieee754}"
+            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with double precision is {ieee754}"
+        elif precision == 128:
+            binary = decimal_to_binary(decimal, 113)  # 1 bit for sign + 15 bits for exponent + 112 bits for mantissa
+            ieee754 = binary_to_ieee754(sign, binary, precision='quad')
+            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with quad precision is {ieee754}"
         else:
-            result = "Invalid precision value. Use 32 or 64."
+            result = "Invalid precision value. Use 16, 32, 64, or 128."
 
     # renders the template
     return render_template('index.html', result=result)
