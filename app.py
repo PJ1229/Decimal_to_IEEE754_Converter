@@ -63,8 +63,12 @@ def binary_to_ieee754(sign, binary, precision='double'):
         exponent_bits = 15
         mantissa_bits = 112
         exponent_bias = 16383
+    elif precision == 'oct':  # 256-bit (new precision)
+        exponent_bits = 19
+        mantissa_bits = 236
+        exponent_bias = 262143  # 2^(19-1) - 1
     else:
-        raise ValueError("Precision must be 'half', 'single', 'double', or 'quad'")
+        raise ValueError("Precision must be 'half', 'single', 'double', 'quad', or 'oct'")
 
     # normalize binary string
     if '.' in binary:
@@ -96,8 +100,11 @@ def binary_to_ieee754(sign, binary, precision='double'):
 
 
 @app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    result = None
+    result_description = None
+    ieee754_number = None  # Separate variable for the IEEE 754 number
     if request.method == 'POST':
         # request data
         decimal = float(request.form['decimal'])
@@ -112,25 +119,29 @@ def index():
         # returns data based on precision type
         if precision == 16:
             binary = decimal_to_binary(decimal, 11)  # 1 bit for sign + 5 bits for exponent + 10 bits for mantissa
-            ieee754 = binary_to_ieee754(sign, binary, precision='half')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with half precision is {ieee754}"
+            ieee754_number = binary_to_ieee754(sign, binary, precision='half')
+            result_description = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with half precision is:"
         elif precision == 32:
             binary = decimal_to_binary(decimal, 24)  # 1 bit for sign + 8 bits for exponent + 23 bits for mantissa
-            ieee754 = binary_to_ieee754(sign, binary, precision='single')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with single precision is {ieee754}"
+            ieee754_number = binary_to_ieee754(sign, binary, precision='single')
+            result_description = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with single precision is:"
         elif precision == 64:
             binary = decimal_to_binary(decimal, 53)  # 1 bit for sign + 11 bits for exponent + 52 bits for mantissa
-            ieee754 = binary_to_ieee754(sign, binary, precision='double')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with double precision is {ieee754}"
+            ieee754_number = binary_to_ieee754(sign, binary, precision='double')
+            result_description = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with double precision is:"
         elif precision == 128:
             binary = decimal_to_binary(decimal, 113)  # 1 bit for sign + 15 bits for exponent + 112 bits for mantissa
-            ieee754 = binary_to_ieee754(sign, binary, precision='quad')
-            result = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with quad precision is {ieee754}"
+            ieee754_number = binary_to_ieee754(sign, binary, precision='quad')
+            result_description = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with quad precision is:"
+        elif precision == 256:
+            binary = decimal_to_binary(decimal, 237)  # 1 bit for sign + 19 bits for exponent + 236 bits for mantissa
+            ieee754_number = binary_to_ieee754(sign, binary, precision='oct')
+            result_description = f"The conversion of {request.form['decimal']} in decimal to IEEE 754 with 256-bit precision is:"
         else:
-            result = "Invalid precision value. Use 16, 32, 64, or 128."
-
-    # renders the template
-    return render_template('index.html', result=result)
+            result_description = "Invalid precision value. Use 16, 32, 64, 128, or 256."
+        
+    # renders the template with both results
+    return render_template('index.html', result_description=result_description, ieee754_number=ieee754_number)
 
 if __name__ == '__main__':
     app.run(debug=False)

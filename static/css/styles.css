@@ -1,0 +1,21 @@
+@font-face {
+    font-family: space-mono;
+    src: url(SpaceMono-Regular.ttf);
+}
+body{
+    font-family: space-mono;
+    background-color: lightblue;
+    margin: 0;
+    padding: 0;
+    
+}
+select{
+    font-family: space-mono;
+    border-radius: 0;
+    border: 0;
+}
+input{
+    font-family: space-mono;
+    border-radius: 0;
+    border: 0;
+}
